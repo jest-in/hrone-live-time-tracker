@@ -1,0 +1,23 @@
+{
+  "name": "Live work hour",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "An extension for hrone users who needs realtime work hours completed",
+  "icons": {
+    "48": "chronometer.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://app.hrone.cloud/*"],
+      "css": ["style.css"],
+      "js": ["content-script.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["xhr-response-interceptor.js", "refresh-icon.png"],
+      "matches": ["https://app.hrone.cloud/*"]
+    }
+  ],
+  "host_permissions": ["https://app.hrone.cloud/*"]
+}
