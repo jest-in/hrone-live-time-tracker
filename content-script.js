@@ -1,10 +1,23 @@
-const logOnUserDetailsJsonString = localStorage.getItem("logOnUserDetails");
-const userData = JSON.parse(logOnUserDetailsJsonString);
-const authDetailsJsonString = localStorage.getItem("authlogin");
-const authDetails = JSON.parse(authDetailsJsonString);
+function getCurrentDate() {
+  const currentDateObject = new Date();
+  const currentDate = currentDateObject.toISOString().split("T")[0];
+  return currentDate;
+}
 
-const today = new Date();
-const todayString = today.toISOString().split("T")[0];
+function getAuthorizationToken() {
+  const authDetailsJsonString = localStorage.getItem("authlogin");
+  const authDetails = JSON.parse(authDetailsJsonString);
+  return authDetails.access_token;
+}
+
+function getPunchDataEndpoint() {
+  const logOnUserDetailsJsonString = localStorage.getItem("logOnUserDetails");
+  const userData = JSON.parse(logOnUserDetailsJsonString);
+
+  return `https://app.hrone.cloud/api/timeoffice/attendance/RawPunch/${
+    userData.employeeId
+  }/${getCurrentDate()}`;
+}
 
 let punchData;
 let lastPunchIn;
@@ -77,16 +90,13 @@ async function punchDataHandler(data) {
 }
 
 async function fetchPunchData() {
-  await fetch(
-    `https://app.hrone.cloud/api/timeoffice/attendance/RawPunch/${userData.employeeId}/${todayString}`,
-    {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${authDetails.access_token}`,
-      },
-    }
-  )
+  await fetch(getPunchDataEndpoint(), {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${getAuthorizationToken()}`,
+    },
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error("Could not fetch! ");

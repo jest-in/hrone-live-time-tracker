@@ -18,6 +18,5 @@
       "resources": ["xhr-response-interceptor.js", "refresh-icon.png"],
       "matches": ["https://app.hrone.cloud/*"]
     }
-  ],
-  "host_permissions": ["https://app.hrone.cloud/*"]
+  ]
 }
