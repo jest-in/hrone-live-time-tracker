@@ -21,7 +21,10 @@ window.XMLHttpRequest.prototype.open = function () {
       const responseBody = this.responseText;
 
       window.postMessage(
-        { type: "FROM_PAGE", data: JSON.parse(responseBody) },
+        {
+          type: "FROM_PAGE",
+          data: responseBody ? JSON.parse(responseBody) : null,
+        },
         "*"
       );
     });

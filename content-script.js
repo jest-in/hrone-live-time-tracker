@@ -74,6 +74,8 @@ function liveTime() {
 }
 
 async function punchDataHandler(data) {
+  // clear previous lastPunchIn
+  lastPunchIn = null;
   punchData = data;
   totalMinutes = getWorkedMinutes(data);
   if (lastPunchIn) {
@@ -104,7 +106,9 @@ async function fetchPunchData() {
       return response.json();
     })
     .then(punchDataHandler)
-    .catch((err) => {});
+    .catch((err) => {
+      render("time", "-- : --");
+    });
 }
 
 function render(id, content, className = "") {
@@ -181,6 +185,7 @@ script.src = chrome.runtime.getURL("xhr-response-interceptor.js");
 window.addEventListener("message", function (event) {
   if (event.source !== window) return;
   if (event.data.type === "FROM_PAGE") {
-    punchDataHandler(event.data.data);
+    if (event.data.data) punchDataHandler(event.data.data);
+    else render("time", "-- : --");
   }
 });
