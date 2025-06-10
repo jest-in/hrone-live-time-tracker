@@ -15,18 +15,22 @@ function getPunchDataEndpoint() {
 
 let oldXHROpen = window.XMLHttpRequest.prototype.open;
 window.XMLHttpRequest.prototype.open = function () {
-  const url = arguments[1];
-  if (url.includes(getPunchDataEndpoint()))
-    this.addEventListener("load", function () {
-      const responseBody = this.responseText;
+  try {
+    const url = arguments[1];
+    if (url.includes(getPunchDataEndpoint()))
+      this.addEventListener("load", function () {
+        const responseBody = this.responseText;
 
-      window.postMessage(
-        {
-          type: "FROM_PAGE",
-          data: responseBody ? JSON.parse(responseBody) : null,
-        },
-        "*"
-      );
-    });
-  return oldXHROpen.apply(this, arguments);
+        window.postMessage(
+          {
+            type: "FROM_PAGE",
+            data: responseBody ? JSON.parse(responseBody) : null,
+          },
+          "*"
+        );
+      });
+  } catch (exceptionVar) {
+  } finally {
+    return oldXHROpen.apply(this, arguments);
+  }
 };
