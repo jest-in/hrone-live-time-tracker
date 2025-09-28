@@ -1,43 +1,69 @@
-#time {
-  position: absolute; /* takes it out of the normal document flow */
-  bottom: 20px; /* adjust as needed */
-  right: 20px; /* adjust as needed */
-  z-index: 9999; /* keeps it on top */
+:host {
+  all: initial;
+}
 
+:host {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.7); /* semi-transparent */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* soft border */
+  border-radius: 37px;
+  padding: 0.7rem 0.9rem;
+  cursor: move;
+}
+
+:host > .time {
+  box-sizing: content-box;
+  border: 1px solid hsla(0, 0%, 100%, 0.3);
+  border-radius: 37px;
+  color: #eaf2e3;
+  padding: 4px 7px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-
-  font-family: Arial, sans-serif;
-  font-weight: bold;
-  font-size: 14px;
-  color: white;
-
-  background-color: rgba(0, 0, 0, 0.7); /* semi-transparent */
-  border: 1px solid rgba(255, 255, 255, 0.3); /* soft border */
-  border-radius: 20px;
-  padding: 6px 12px;
-
-  /* pointer-events: none; */
-  cursor: pointer;
+  font-size: 16px;
+  margin: 0;
+  min-width: 36px;
 }
 
-#time.live::before {
+:host > .time:not(.live) {
+  padding: 4.8px 16px;
+}
+
+:host > .time.live::before {
   content: "";
-  width: 10px;
-  height: 10px;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
   background-color: red;
   border-radius: 50%;
+  margin-right: 0.5rem;
   animation: blink 1s infinite;
 }
 
-#time > button {
-  background-color: transparent;
+:host > button {
   border: none;
-  display: flex;
+  padding: 0;
+  background-color: transparent;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
+}
+
+:host > button > img {
+  height: 1.2rem;
+}
+
+:host > button.rotate > img {
+  animation: rotate 5s infinite;
 }
 
 @keyframes blink {
@@ -48,5 +74,14 @@
   }
   40% {
     opacity: 0;
+  }
+}
+
+@keyframes rotate {
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }

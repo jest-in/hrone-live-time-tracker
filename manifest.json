@@ -9,13 +9,16 @@
   "content_scripts": [
     {
       "matches": ["https://app.hrone.cloud/*"],
-      "css": ["style.css"],
       "js": ["content-script.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["xhr-response-interceptor.js", "refresh-icon.png"],
+      "resources": [
+        "xhr-response-interceptor.js",
+        "style.css",
+        "refresh-icon.svg"
+      ],
       "matches": ["https://app.hrone.cloud/*"]
     }
   ]

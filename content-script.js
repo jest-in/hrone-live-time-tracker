@@ -22,6 +22,11 @@ function getPunchDataEndpoint() {
 let punchData;
 let lastPunchIn;
 let totalMinutes;
+let intervalId;
+const extensionContainerId = "extension-container";
+const refreshIconUrl = chrome.runtime.getURL("refresh-icon.svg");
+const externalCssUrl = chrome.runtime.getURL("style.css");
+let timeContentElement;
 
 function getWorkedMinutes(punchData) {
   let totalMinutes = 0;
@@ -58,7 +63,6 @@ function latestTime() {
 }
 
 function updateTime(content) {
-  const timeContentElement = document.querySelector("#time span");
   timeContentElement.textContent = content;
 }
 
@@ -78,37 +82,43 @@ async function punchDataHandler(data) {
   lastPunchIn = null;
   punchData = data;
   totalMinutes = getWorkedMinutes(data);
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
   if (lastPunchIn) {
     const now = latestTime();
     render(
-      "time",
+      extensionContainerId,
       formatTime(totalMinutes + Math.floor((now - lastPunchIn) / (1000 * 60))),
       "live"
     );
-    setInterval(liveTime, 60000);
+    intervalId = setInterval(liveTime, 60000);
   } else {
-    render("time", formatTime(totalMinutes));
+    render(extensionContainerId, formatTime(totalMinutes));
   }
 }
 
 async function fetchPunchData() {
-  await fetch(getPunchDataEndpoint(), {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${getAuthorizationToken()}`,
-    },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Could not fetch! ");
-      }
-      return response.json();
+  try {
+    await fetch(getPunchDataEndpoint(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${getAuthorizationToken()}`,
+      },
     })
-    .then(punchDataHandler)
-    .catch((err) => {
-      render("time", "-- : --");
-    });
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Could not fetch! ");
+        }
+        return response.json();
+      })
+      .then(punchDataHandler)
+      .catch((err) => {
+        render(extensionContainerId, "-- : --");
+      });
+  } catch (error) {}
 }
 
 function render(id, content, className = "") {
@@ -116,32 +126,39 @@ function render(id, content, className = "") {
   if (!div) {
     div = document.createElement("div");
     div.id = id;
-    div.className = className;
+    const shadow = div.attachShadow({ mode: "open" });
     document.body.insertBefore(div, document.body.firstChild);
-    const span = document.createElement("span");
-    span.innerHTML = content;
-    div.appendChild(span);
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = externalCssUrl;
+    shadow.appendChild(link);
+    timeContentElement = document.createElement("p");
+    timeContentElement.innerHTML = content;
+    timeContentElement.className = `time ${className}`;
+    shadow.appendChild(timeContentElement);
     const button = document.createElement("button");
-    button.innerHTML = `<img src="${chrome.runtime.getURL(
-      "refresh-icon.png"
-    )}" alt="icon" style="width:16px; height:16px; vertical-align:middle;">`;
+    button.innerHTML = `<img src="${refreshIconUrl}" alt="refresh">`;
 
     button.onclick = function () {
+      this.classList.add("rotate");
       fetchPunchData();
+      setTimeout(() => {
+        this.classList.remove("rotate");
+      }, 2000);
     };
-    // Append the button to the div
-    div.appendChild(button);
+    shadow.appendChild(button);
   } else {
     updateTime(content);
-    div.className = className;
+    timeContentElement.className = `time ${className}`;
   }
 }
 
-render("time", "-- : --");
+render(extensionContainerId, "-- : --");
 
 fetchPunchData();
 
-const myDiv = document.getElementById("time");
+const myDiv = document.getElementById(extensionContainerId);
 let offsetX = 0,
   offsetY = 0,
   isDragging = false;
@@ -186,6 +203,6 @@ window.addEventListener("message", function (event) {
   if (event.source !== window) return;
   if (event.data.type === "FROM_PAGE") {
     if (event.data.data) punchDataHandler(event.data.data);
-    else render("time", "-- : --");
+    else render(extensionContainerId, "-- : --");
   }
 });
